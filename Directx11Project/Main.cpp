@@ -2,41 +2,37 @@
 #include<stdio.h>
 #include<DirectXMath.h>
 #include<windows.h>
+#include<d3d11_2.h>
+#include<d3d11shader.h>
 using namespace DirectX;
+HINSTANCE minst = NULL;
+HWND mhnd = NULL;
+WCHAR m_app[] = L"sample";
+WCHAR m_class[] = L"sample11";
 
-struct Vertex
+SIZE gsize = {640,480};
+
+ID3D11Device* mp2d11device = NULL;
+
+ID3D11DeviceContext* mcontext = NULL;
+IDXGISwapChain* mchain = NULL;
+ID3D11RenderTargetView* mrendertargetview = NULL;
+D3D11_VIEWPORT mViewPort[1];
+
+D3D10_PASS_DESC passdesc;
+
+ID3D11InputLayout* vertexlayout;
+//ID3DX11Effect* peffect;
+ID3D10Blob * pBlob;
+
+ID3D11Texture2D *sampleimg;
+ID3D11Texture2D *sampleimg2;
+LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, UINT wParam, LONG lParam);
+void GeteRerouceViewFromTexture(ID3D11Texture2D* tex, ID3D11ShaderResourceView **resouceview);
+
+struct MyVertex
 {
-	XMFLOAT3 Pos;
-	XMFLOAT4 Color;
+	XMVECTOR Pos;
+	XMVECTOR Color;
+	XMVECTOR UV;
 };
-
-
-struct CBuffer
-{
-	XMMATRIX mWorld;
-	XMMATRIX mView;
-	XMMATRIX mProjection;
-};
-
-HINSTANCE g_hInst = NULL;
-HWND g_hWnd = NULL;
-D3D_FEATURE_LEVEL                   g_featureLevel = D3D_FEATURE_LEVEL_11_0;
-ID3D11Device* g_pd3Device = NULL;
-ID3D11DeviceContext* g_pImmediateContext = NULL;
-IDXGISwapChain* g_pSwapChain = NULL;
-ID3D11RenderTargetView* RenderTarget = NULL;
-ID3D11Texture2D* DepthStencil = NULL;
-ID3D11DepthStencilView*             g_pDepthStencilView = NULL;
-ID3D11VertexShader* VertexShader = NULL;
-ID3D11PixelShader* PixselShader = NULL;
-ID3D11InputLayout* VertexLayout = NULL;
-ID3D10Buffer*IndexBuffer = NULL;
-ID3D11Buffer*                       g_pCBNeverChanges = NULL;
-ID3D11Buffer*                       g_pCBChangeOnResize = NULL;
-ID3D11Buffer*                       g_pCBChangesEveryFrame = NULL;
-ID3D11ShaderResourceView*           g_pTextureRV = NULL;
-ID3D11SamplerState*                 g_pSamplerLinear = NULL;
-XMMATRIX g_world;
-XMMATRIX g_view;
-XMMATRIX g_project;
-XMFLOAT4 g_mesh(0.7f, 0.7f, 0.7f,1.0f);
