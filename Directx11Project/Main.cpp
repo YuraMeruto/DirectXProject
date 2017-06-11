@@ -195,10 +195,103 @@ HRESULT Render(void)
 
 	float rotate = (float)(XM_PI * (timeGetTime() % 2000)) / 2000.0f;
 	matZ = XMMatrixRotationZ(rotate);
-	 rotate = (float)(XM_PI * (timeGetTime() % 1500)) / 5000.0f;
+	rotate = (float)(XM_PI * (timeGetTime() % 1500)) / 5000.0f;
 	matX = XMMatrixRotationX(rotate);
 	matInit = XMMatrixIdentity();
 	matScalling = XMMatrixScaling(4.0f, 3.0f, 14.0f);
-	matInit = XMMatrixMultiply(matInit,matScalling);
+	matInit = XMMatrixMultiply(matInit, matScalling);
+
+
+	XMMATRIX matView;
+	matView = XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, -10.0f, 1), XMVectorSet(0.0f, 0.0f, 1.0f, 1), XMVectorSet(0.0f, 1.0f, 0.0f, 1));
+
+	XMMATRIX mat;
+	XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), (float)640 / (float)480, -10.0f, 800.0f);
+	float ClearColor[4] = { 0.0f,0.5f,0.7f,1.0f };
+	mcontext->ClearRenderTargetView(mrendertargetview, ClearColor);
+	mcontext->RSSetViewports(1, mViewPort);
+	mcontext->OMSetRenderTargets(1,&mrendertargetview,NULL);
 	
+	hr = mchain->Present(0, 0);
+	return hr;
+}
+
+
+bool CleanupDirect3D(void)
+{
+	if (mp2d11device) mcontext->ClearState();
+	return true;
+}
+
+bool CleanAPP(void)
+{
+	UnregisterClass(m_class, minst);
+	return true;
+}
+
+LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, UINT wparam, LONG lparam)
+{
+	HRESULT hr = S_OK;
+
+	switch (msg)
+	{
+	case WM_DESTROY:
+		CleanupDirect3D();
+		PostQuitMessage(0);
+		mhnd = NULL;
+		return 0;
+
+	case WM_KEYDOWN:
+		switch (wparam)
+		{
+		case VK_ESCAPE:
+			PostMessage(hwnd, WM_CLOSE, 0, 0);
+			break;
+		}
+		break;
+	}
+	return DefWindowProc(hwnd,msg,wparam,lparam);
+}
+
+HRESULT IsDeviceRemoved(void)
+{
+	HRESULT hr;
+	hr = mp2d11device->GetDeviceRemovedReason();
+	switch (hr) {
+	case S_OK:
+		break;         // 正常
+
+	case DXGI_ERROR_DEVICE_HUNG:
+	case DXGI_ERROR_DEVICE_RESET:
+		CleanupDirect3D();				// Direct3Dの解放(アプリケーション定義)
+		hr = InitDirect3D();			// Direct3Dの初期化(アプリケーション定義)
+		if (FAILED(hr))	return hr; // 失敗。アプリケーションを終了
+		break;
+
+	case DXGI_ERROR_DEVICE_REMOVED:
+	case DXGI_ERROR_DRIVER_INTERNAL_ERROR:
+	case E_OUTOFMEMORY:
+	default:
+		return hr;   // どうしようもないので、アプリケーションを終了。
+	};
+	return S_OK;
+
+}
+
+
+bool AppIdle(void)
+{
+	if (!mp2d11device)	return false;
+	HRESULT hr;
+	hr = IsDeviceRemoved();
+	if (FAILED(hr))	return false;
+
+	Render();
+	return true;
+}
+
+int WINAPI wWinMain(HINSTANCE hInst,HINSTANCE, LPWSTR, int)
+{
+	HRESULT hr = InitApp(hInst);
+
 }

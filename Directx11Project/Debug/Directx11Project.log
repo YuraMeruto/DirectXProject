@@ -1,2 +1,4 @@
 ﻿  Main.cpp
-LINK : fatal error LNK1561: entry point must be defined
+c:\dorectxproject\directx11project\main.cpp(164): error C3861: 'InitBackBuffer': 識別子が見つかりませんでした
+c:\dorectxproject\directx11project\main.cpp(183): warning C4244: '=': 'UINT' から 'FLOAT' への変換です。データが失われる可能性があります。
+c:\dorectxproject\directx11project\main.cpp(184): warning C4244: '=': 'UINT' から 'FLOAT' への変換です。データが失われる可能性があります。
